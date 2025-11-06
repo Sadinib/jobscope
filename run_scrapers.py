@@ -1,54 +1,30 @@
-# run_scrapers.py
-import sys
-import os
-sys.path.insert(0, os.getcwd())
+from scraping.scraping_orchestrator import ScrapingOrchestrator
 
-print("🚀 Iniciando JobScope Scrapers...")
-
-try:
-    from db.db import db
-    print("MongoDB conectado")
-
-    print("🧹 Limpiando TODOS los trabajos...")
-    result = db.jobs.delete_many({})
-    print(f"Eliminados {result.deleted_count} trabajos")
+def main():
+    print("Iniciando JobScope Scrapers...")
     
-    # 1. COMPUTRABAJO (Requests) - Ya funciona
-    print("\n" + "="*50)
-    print("🔍 Probando ComputrabajoScraper...")
-    from scraping.job_scrapers.computrabajo_scraper import ComputrabajoScraper
-    
-    compu_scraper = ComputrabajoScraper()
-    compu_jobs = compu_scraper.scrape("python", "Colombia", pages=1)
-    print(f"Computrabajo: {len(compu_jobs)} trabajos encontrados")
-    
-    # 2. INDEED (Selenium) - CÓDIGO EXACTO del test que funciona
-    print("\n" + "="*50)
-    print("Probando IndeedScraper con Selenium...")
-    from scraping.job_scrapers.indeed_scraper import IndeedScraper
-    
-    indeed_scraper = IndeedScraper()
     try:
-        indeed_jobs = indeed_scraper.scrape("python", "Medellín", pages=1)  # Mismo parámetro que en el test
-        print(f"Indeed: {len(indeed_jobs)} trabajos encontrados")
-            
+        from db.db import db
+        print("MongoDB conectado")
+        
+        #Limpiar antes de empezar (opcional)
+        print("Limpiando trabajos anteriores...")
+        result = db.jobs.delete_many({})
+        print(f"Eliminados {result.deleted_count} trabajos anteriores")
+        
+        print("\n" + "="*50)
+        print("Ejecutando scraping completo...")
+        jobs_count, jobs = ScrapingOrchestrator.run_full_scraping()
+        
+        #Resumen
+        print("\n" + "="*50)
+        print("RESUMEN FINAL:")
+        print(f"Total trabajos scrapeados: {jobs_count}")
+        
     except Exception as e:
-        print(f"Error en Indeed: {e}")
-        indeed_jobs = []
-    finally:
-        indeed_scraper.selenium_scraper.close()  # MÉTODO EXACTO del test
-    
-    # RESUMEN FINAL
-    print("\n" + "="*50)
-    total_jobs = len(compu_jobs) + len(indeed_jobs)
-    print("RESUMEN FINAL:")
-    print(f"Total trabajos scrapeados: {total_jobs}")
-    print(f"   - Computrabajo (Requests): {len(compu_jobs)}")
-    print(f"   - Indeed (Selenium): {len(indeed_jobs)}")
-    
-except Exception as e:
-    print(f"ERROR general: {e}")
-    import traceback
-    traceback.print_exc()
+        print(f"ERROR general: {e}")
+        import traceback
+        traceback.print_exc()
 
-print("\nScript terminado")
+if __name__ == "__main__":
+    main()

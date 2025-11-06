@@ -30,23 +30,28 @@ class BaseJobScraper(BaseScraper, ABC):
         except Exception as e:
             print(f"Error guardando trabajos: {e}")
             return False
-        
-    def clean_expired_jobs(self):
+
+    @staticmethod
+    def clean_expired_jobs():
         try:
-            limit_date = self.get_current_utc_time() - timedelta(days=3)
+            from db.db import db
+            
+            limit_date = datetime.now(timezone.utc) - timedelta(days=3)
 
             delete = db.jobs.delete_many({
                 "scraped_at": {"$lt": limit_date}
             })
-            print(f"Eliminados {delete.deleted_count} trabajos antiguos")
+            print(f"🗑️ Eliminados {delete.deleted_count} trabajos antiguos")
 
             if delete.acknowledged:
-                print ("Operacion confirmada por MongoDB")
+                print("Operación confirmada por MongoDB")
+                return delete.deleted_count
             else:
-                print ("Operacion invalida")
+                print("Operación invalida")
+                return 0
 
         except Exception as e:
-            print (f"Error la operación {e} no confirmada")
+            print(f"Error en la operación: {e}")
             return None
 
         
