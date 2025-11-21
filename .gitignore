@@ -1,16 +1,34 @@
-venv/
-.env
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
 
+# Database  
+*.sqlite
+*.db
+celery_broker.sqlite
+celery_results.sqlite
+
+# Environment
+.env
 .env.local
-*.log
 
+# Testing
+test_*.py
+debug_*.py
+compare_*.py
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
 .idea/
-.DS_Store
-
-dist/
-build/
-*.egg-info/
-
+*.swp
+*.swo
